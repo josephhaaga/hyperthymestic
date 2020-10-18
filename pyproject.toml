@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "hyperthymestic"
+version = "0.1.0"
+description = "A search utility for your Markdown knowledge base."
+license = "MIT"
+readme = "README.rst"
+homepage = "https://joehaaga.xyz"
+repository = "https://github.com/josephhaaga/hyperthymestic"
+keywords = ["markdown", "knowledge base"]
+authors = ["Joseph Haaga <haaga.joe@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+spacy = "^2.3.2"
+scikit-learn = "^0.23.2"
+click = "^7.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+
+[tool.poetry.scripts]
+hyperthymestic = "hyperthymestic.console:main"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
