@@ -14,12 +14,14 @@ python = "^3.7"
 spacy = "^2.3.2"
 scikit-learn = "^0.23.2"
 click = "^7.0"
+appdirs = "^1.4.4"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
+pytest-mock = "^3.3.1"
 
 [tool.poetry.scripts]
-hyperthymestic = "hyperthymestic.console:main"
+hyperthymestic = "hyperthymestic.console:cli"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
