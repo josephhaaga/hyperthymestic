@@ -3,8 +3,11 @@ from typing import Mapping
 
 from appdirs import AppDirs
 from configparser import ConfigParser
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 from hyperthymestic import __version__
+from hyperthymestic.models import Base
 
 
 def dirs() -> AppDirs:
@@ -35,4 +38,15 @@ def write_config(conf_map: Mapping) -> None:
     with open(conf_file_path, 'w') as configfile:
         conf_map.write(configfile)
 
+def get_database():
+    db_filepath = database_file_path()
+    db_filepath.touch(mode=0o775, exist_ok=True)
+    engine = create_engine("sqlite:///"+str(db_filepath), echo=False)
+    session = sessionmaker(bind=engine)
+    return engine, session()
+
+def create_tables():
+    eng, _ = get_database()
+    Base.metadata.create_all(eng)
+    print(f"Created tables!")
 
