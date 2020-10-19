@@ -17,7 +17,7 @@ from hyperthymestic.utils import get_database
 def cli(ctx):
     """A search utility for your Markdown knowledge base."""
     ctx.ensure_object(dict)
-    _, ctx.obj['DATABASE'] = get_database()
+    _engine, ctx.obj['database'] = get_database()
 
 @cli.command()
 @click.pass_context
@@ -51,6 +51,7 @@ def init(ctx) -> int:
     example_doc = Document(filename="example.md", filepath="path/to/example.md")
     session = ctx.obj['DATABASE']
     session.add(example_doc)
+    session.commit()
     q = session.query(Document)
     print(q.first())
 
