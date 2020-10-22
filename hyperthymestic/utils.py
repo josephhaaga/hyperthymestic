@@ -1,3 +1,4 @@
+from hashlib import sha256
 from pathlib import Path
 from typing import Mapping
 
@@ -49,4 +50,16 @@ def create_tables():
     eng, _ = get_database()
     Base.metadata.create_all(eng)
     print(f"Created tables!")
+
+
+def hash_file(filepath: Path) -> str:
+    h = sha256()
+    with open(filepath, 'rb') as f:
+        while True:
+            chunk = f.read(h.block_size)
+            if not chunk:
+                break
+            h.update(chunk)
+        return h.hexdigest()
+
 
