@@ -4,6 +4,7 @@ import textwrap
 
 import click
 from configparser import ConfigParser
+import spacy
 
 from hyperthymestic import __version__
 from hyperthymestic.models import Document
@@ -29,6 +30,7 @@ def cli(ctx):
 @click.pass_context
 def main(ctx) -> int:
     db = ctx.obj['database']
+    nlp = None #spacy.load("en_core_web_md")
     folder_path = Path(ctx.obj['config']['hyperthymestic']['kb_directory_path'])
     # USE TQDM AND SHOW HOW MANY DOCS ARE UPDATING
     for doc in sorted(list(folder_path.glob("*.md"))):
@@ -52,14 +54,18 @@ def main(ctx) -> int:
         if db_snapshot == None:
             if not is_new_doc:
                 click.secho(f"Updated document \"{doc.name}\"", fg="yellow")
-            ds = DocumentSnapshot(
+            db_snapshot = DocumentSnapshot(
                 doc_id=db_document.id,
                 hash=hash_value,
                 date_parsed=datetime.now()
             )
-            db.add(ds)
+            db.add(db_snapshot)
             db.commit()
+            if not nlp:
+                nlp = spacy.load("en_core_web_md")
+            parsed_doc = nlp(
             # DO NLP HERE AND COMMIT THE EMBEDDINGS
+            # TODO create a custom spacy pipeline that will remove escape sequences, line escapes, etc.
         else:
             click.echo(f"Unchanged document \"{doc.name}\"")
     return 0
