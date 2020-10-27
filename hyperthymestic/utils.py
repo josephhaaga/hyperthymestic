@@ -62,4 +62,3 @@ def hash_file(filepath: Path) -> str:
             h.update(chunk)
         return h.hexdigest()
 
-

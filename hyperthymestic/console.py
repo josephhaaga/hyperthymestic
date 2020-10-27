@@ -9,6 +9,7 @@ import spacy
 from hyperthymestic import __version__
 from hyperthymestic.models import Document
 from hyperthymestic.models import DocumentSnapshot
+from hyperthymestic.models import DocumentEmbedding
 from hyperthymestic.utils import create_tables
 from hyperthymestic.utils import get_config
 from hyperthymestic.utils import get_database
@@ -24,15 +25,15 @@ def cli(ctx):
     ctx.ensure_object(dict)
     ctx.obj['config'] = get_config()
     _engine, ctx.obj['database'] = get_database()
+    click.echo(f"Using database {_engine.url}")
 
 
 @cli.command()
 @click.pass_context
 def main(ctx) -> int:
     db = ctx.obj['database']
-    nlp = None #spacy.load("en_core_web_md")
+    nlp = None
     folder_path = Path(ctx.obj['config']['hyperthymestic']['kb_directory_path'])
-    # USE TQDM AND SHOW HOW MANY DOCS ARE UPDATING
     for doc in sorted(list(folder_path.glob("*.md"))):
         is_new_doc = False
         hash_value = hash_file(doc)
@@ -63,13 +64,35 @@ def main(ctx) -> int:
             db.commit()
             if not nlp:
                 nlp = spacy.load("en_core_web_md")
-            parsed_doc = nlp(
-            # DO NLP HERE AND COMMIT THE EMBEDDINGS
+            text = open(doc).read().replace("\n", "")
+            parsed_doc = nlp(text)
+            db_embedding = DocumentEmbedding(
+                snapshot_id=db_snapshot.id,
+                embeddings=parsed_doc.vector
+            )
+            db.add(db_embedding)
+            db.commit()
             # TODO create a custom spacy pipeline that will remove escape sequences, line escapes, etc.
         else:
             click.echo(f"Unchanged document \"{doc.name}\"")
     return 0
 
+
+@cli.command()
+@click.argument('filename')
+@click.pass_context
+def find(ctx, filename=None) -> int:
+    db = ctx.obj['database']
+    doc = db.query(Document).filter_by(filename=filename).first()
+    if not doc:
+        click.secho(f"File \"{filename}\" not found", fg="red")
+        return 1
+    click.secho(str(doc), fg="blue")
+    snapshot = db.query(DocumentSnapshot).filter_by(doc_id=doc.id).first()
+    click.echo(str(snapshot))
+    embedding = db.query(DocumentEmbedding).filter_by(snapshot_id=snapshot.id).first()
+    click.echo(str(embedding))
+    return 0
 
 @cli.command()
 @click.pass_context
