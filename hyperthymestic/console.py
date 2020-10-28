@@ -30,7 +30,8 @@ def cli(ctx):
 
 @cli.command()
 @click.pass_context
-def main(ctx) -> int:
+def update(ctx) -> int:
+    """Process changes to your Markdown files."""
     db = ctx.obj['database']
     nlp = None
     folder_path = Path(ctx.obj['config']['hyperthymestic']['kb_directory_path'])
@@ -82,6 +83,7 @@ def main(ctx) -> int:
 @click.argument('filename')
 @click.pass_context
 def find(ctx, filename=None) -> int:
+    """Show information about a Markdown file."""
     db = ctx.obj['database']
     doc = db.query(Document).filter_by(filename=filename).first()
     if not doc:
